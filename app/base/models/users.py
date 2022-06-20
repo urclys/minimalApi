@@ -1,23 +1,18 @@
 # -*- encoding: utf-8 -*-
-from flask_login import UserMixin
-from app import db, login_manager
+from app import db,jwt
 
 from app.base.tools import hash_pass
 import secrets
 import datetime
 
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    return user.id
 
-@login_manager.user_loader
-def user_loader(id):
-    return User.query.filter_by(id=id).first()
-
-
-# @login_manager.request_loader
-# def request_loader(request):
-#     username = request.form.get('username')
-#     user = User.query.filter_by(username=username).first()
-#     return user if user else None
-
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    return User.query.filter_by(id=identity).one_or_none()
 
 ############## MIXINS ##############################################
 
@@ -29,7 +24,7 @@ class TimestampMixin(object):
 ############## Models ##############################################
 
 
-class User(db.Model, UserMixin, TimestampMixin):
+class User(db.Model, TimestampMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -82,4 +77,23 @@ class User(db.Model, UserMixin, TimestampMixin):
         return f"{self.first_name} {self.last_name}"
 
 
+# it could track who revoked a JWT, when a token expires, notes for why a
+# JWT was revoked, an endpoint to un-revoked a JWT, etc.
+# Making jti an index can significantly speed up the search when there are
+# tens of thousands of records. Remember this query will happen for every
+# (protected) request,
+# If your database supports a UUID type, this can be used for the jti column
+# as well
 
+class TokenBlocklist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(36), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+
+
+# Callback function to check if a JWT exists in the database blocklist
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
+    jti = jwt_payload["jti"]
+    token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+    return token is not None

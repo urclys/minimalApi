@@ -10,7 +10,7 @@ from functools import wraps
 from threading import Thread
 
 
-from flask import current_app as app
+from flask import current_app as app, jsonify, make_response
 from flask import abort
 from flask_mail import Message
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -36,11 +36,11 @@ def verify_pass(provided_password, stored_password):
 
 
 def success_response(httpCode, data=None):
-    return {'status': 'success', 'data': data}, httpCode
+    return make_response(jsonify({'status': 'success', 'data': data}), httpCode)
 
 
 def fail_response(httpCode, message):
-    return {'status': 'fail', 'data': {'error': httpCode, 'message': message}}, httpCode
+    return make_response(jsonify({'status': 'fail', 'data': {'error': httpCode, 'message': message}}), httpCode)
 
 
 ########################### Email handler #######################

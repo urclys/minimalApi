@@ -1,10 +1,9 @@
 
 from flask import Flask
-from flask_login import LoginManager
+from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from flask_cors import CORS
-from flask_restful import Api
 from flask_wtf import CSRFProtect
 
 
@@ -15,22 +14,20 @@ import app
 mail = Mail()
 cors = CORS()
 db = SQLAlchemy()
-
-login_manager = LoginManager()
-api = Api()
+jwt = JWTManager()
 csrf = CSRFProtect()
 
 
 def register_extensions(app):
     db.init_app(app)
-    login_manager.init_app(app)
     mail.init_app(app)
     cors.init_app(app)
-    csrf.init_app(app)
+    # csrf.init_app(app)
+    jwt.init_app(app)
 
 
 def register_blueprints(app):
-    for module_name in ('base', 'home'):
+    for module_name in ['base']:
         module = import_module('app.{}.routes'.format(module_name))
         app.register_blueprint(module.blueprint)
 
@@ -66,6 +63,5 @@ def create_app(config, selenium=False):
 
     with app.app_context():
         register_blueprints(app)
-        api.init_app(app)
 
     return app

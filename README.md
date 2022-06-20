@@ -97,7 +97,7 @@ flask shell
 In the flask shell import User model and db, and initialize a new user object
 
 ```
-from app.base.models import User
+from app.base..models.users import User
 from app import db
 
 admin = User(email="admin@mabet.ma", first_name="administrateur", last_name="mabet", password="mabetP455")

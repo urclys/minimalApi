@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 
+from datetime import timedelta
 import os
 
 
@@ -7,6 +8,15 @@ class Config(object):
 
     basedir = os.path.abspath(os.path.dirname(__file__))
     SECRET_KEY = os.environ.get('SECRET_KEY')
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
+
+    # If true this will only allow the cookies that contain your JWTs to be sent
+    # over https. In production, this should always be set to True
+    JWT_TOKEN_LOCATION = ["cookies"]
+    JWT_SECRET_KEY = "super-secret"  # Change this in your code!
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=3)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+
 
 
 class DevelopmentConfig(Config):
@@ -25,6 +35,9 @@ class DevelopmentConfig(Config):
     MAIL_USE_TLS = True
     SSL_REDIRECT = False
 
+    JWT_COOKIE_SECURE = False
+
+
 
 class ProductionConfig(Config):
     DEBUG = False
@@ -41,6 +54,8 @@ class ProductionConfig(Config):
     MAIL_USE_SSL = False
     MAIL_USE_TLS = True
     SSL_REDIRECT = False
+
+    JWT_COOKIE_SECURE = True
 
 
 class DebugConfig(Config):

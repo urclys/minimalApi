@@ -1,8 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from flask_migrate import Migrate
-from flask_restful import Api
-from flask_mail import Mail
+
 
 from os import environ
 from sys import exit
@@ -21,7 +20,7 @@ except KeyError:
 app = create_app(config_mode)
 
 
-Migrate(app, db)
+Migrate(app, db,compare_type=True)
 
 if __name__ == "__main__":
     app.run()
