@@ -9,6 +9,22 @@ from app.base.models.users import User
 
 from app.base.tools import (success_response, fail_response)
 
+# @blueprint.route('/api/auth/protected')
+# @jwt_required()
+# def protected_route():
+#     return jsonify(
+#         id=current_user.id,
+#         full_name=current_user.get_name
+#     )
+
+# @blueprint.route('/api/auth/fresh')
+# @jwt_required(fresh=True)
+# def protected_fresh_route():
+#     return jsonify(
+#         id=current_user.id,
+#         full_name=current_user.get_name
+#     )
+
 
 @blueprint.route('/api/auth/login', methods=['POST'])
 def login():
@@ -42,21 +58,7 @@ def forgot_password():
     else:
         return fail_response(400, form.errors)
 
-@blueprint.route('/api/auth/protected')
-@jwt_required()
-def protected_route():
-    return jsonify(
-        id=current_user.id,
-        full_name=current_user.get_name
-    )
 
-@blueprint.route('/api/auth/fresh')
-@jwt_required(fresh=True)
-def protected_fresh_route():
-    return jsonify(
-        id=current_user.id,
-        full_name=current_user.get_name
-    )
 
 # We are using the `refresh=True` options in jwt_required to only allow
 # refresh tokens to access this route.
@@ -66,7 +68,7 @@ def refresh():
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity,fresh=True)
     response = success_response(200)
-    unset_access_cookies()
+    unset_access_cookies(response)
     set_access_cookies(response, access_token)
     return response
 
